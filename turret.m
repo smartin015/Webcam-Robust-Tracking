@@ -5,13 +5,14 @@ classdef turret < handle
        state;
        firing;
        vel;
+       imhandle;
     end 
     
     properties (Constant)
-        STNAMES = {'CALIBRATE', 'BRAKE', 'LOCALIZE', 'FOLLOW', 'ATTACK'};
+        STNAMES = {'CALIBRATE', 'BRAKE', 'FIXED', 'FOLLOW', 'ATTACK'};
         ST_CALIBRATE = 1; % Rotate to create image panorama
         ST_BRAKE     = 2; % Stop all actions
-        ST_LOCALIZE  = 3; % Search for position, but don't track objects
+        ST_FIXED     = 3; % Search for objects, but don't track them
         ST_FOLLOW    = 4; % Search and track, but don't attack targets
         ST_ATTACK    = 5; % Search, track and neutralize!
         
@@ -32,6 +33,9 @@ classdef turret < handle
             o.set_speed(0);
             o.set_firing(0);
             o.ser_update(o.vel, o.firing); 
+            
+            figure('Name', 'TurretView');
+            o.imhandle = imshow(zeros(240,320));
         end
         
         function ser_update(o, trigger_state, rotation_speed)
@@ -72,6 +76,7 @@ classdef turret < handle
         end
         
         function step(o, IM, delta_ms)
+            
             % Calculates the next move given camera input
             switch (o.state)
                 case o.ST_CALIBRATE
@@ -98,14 +103,17 @@ classdef turret < handle
                     o.firing = 0;
                     o.vel = 0;
                     return
-                case o.ST_LOCALIZE
+                case o.ST_FIXED
                     %Get position update estimate from tracker
                     %given current speed
                     rot_delta = o.tracker.estimate_shift(IM, o.vel * (delta_ms/1000));
+                    disp(o.tracker.h_pos);
+                    %Subtract the background to detect foreground objects
+                    im2 = o.tracker.get_frame();
+                    set(o.imhandle, 'CData', im2);
+                    %[fg_mask, props] = detect_objects(IM, o.tracker.get_frame());
                     
-                    %TODO: PID loop for better tracking
-                    
-                    error('Implement localize');
+                    %set(o.imhandle, 'CData', fg_mask);
                 case o.ST_FOLLOW
                     error('Implement follow');
                 case o.ST_ATTACK

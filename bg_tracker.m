@@ -162,6 +162,11 @@ classdef bg_tracker < handle
           % Creates a camera-view image at panorama position
           IM = o.bg_panorama(:, pos: pos + o.imsz(2) - 1);
        end
+       
+       function [IM] = get_frame(o)
+           IM =  o.pull_bg_section(round(o.h_pos));
+       end
+       
    end
    
 end

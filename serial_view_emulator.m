@@ -31,31 +31,12 @@ classdef serial_view_emulator < serial_template
             [o.target_vel, o.firing] = o.decode(c);
         end
         
-        function IM = next_frame(o, delta_ms)
-            %Updates position and returns a snapshot of what the camera
-            %would see at the current position. Includes gaussian noise and
-            %motion blur. 
-            
-            %Accelerate towards desired velocity
-            
-            o.vel = o.MOMENTUM * o.vel + (1 - o.MOMENTUM) * o.target_vel;
-            dt = delta_ms / 1000.0;
-            o.hpos = o.hpos + 2*(o.vel .* dt);
-            
-            %Allow wraparound
-            if (o.hpos < 10)
-                o.hpos = o.hpos + o.pan_wide;
-            elseif (o.hpos > o.pan_wide + 10)
-                o.hpos = o.hpos - o.pan_wide;
-            end
-            
-            IM = o.pan(:, round(o.hpos):round(o.hpos)+o.WIDTH-1);
-   
+        function [IM] = apply_noise(~, IM, px_movement)
             %Add motion blur if we're moving
-            len = floor(abs(o.vel .* dt));
+            len = floor(abs(px_movement));
             if (len > 0)
                 theta = 0;
-                if (dt < 0)
+                if (px_movement < 0)
                     theta = 180;
                 end
                 motionFilter = fspecial('motion', len, theta);
@@ -64,6 +45,34 @@ classdef serial_view_emulator < serial_template
             
             %Add some image noise
             IM = imnoise(IM, 'gaussian');
+        end
+        
+        function [px_movement] = update_pos(o, delta_ms)
+            %Accelerate towards desired velocity
+            o.vel = o.MOMENTUM * o.vel + (1 - o.MOMENTUM) * o.target_vel;
+            dt = delta_ms / 1000.0;
+            px_movement = 2*(o.vel .* dt);
+            o.hpos = o.hpos + px_movement;
+            
+            %Allow wraparound
+            if (o.hpos < 10)
+                o.hpos = o.hpos + o.pan_wide;
+            elseif (o.hpos > o.pan_wide + 10)
+                o.hpos = o.hpos - o.pan_wide;
+            end
+        end
+        
+        function [IM] = get_current_view(o)
+            IM = o.pan(:, round(o.hpos):round(o.hpos)+o.WIDTH-1);
+        end
+        
+        function IM = next_frame(o, delta_ms)
+            %Updates position and returns a snapshot of what the camera
+            %would see at the current position. Includes gaussian noise and
+            %motion blur. 
+            
+            px_movement = o.update_pos(delta_ms);
+            IM = o.apply_noise(o.get_current_view(), px_movement);
         end
     end
 end
