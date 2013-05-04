@@ -5,7 +5,14 @@ classdef turret < handle
        state;
        firing;
        vel;
-       imhandle;
+       fghandle;
+       camhandle;
+       bghandle;
+       crosshairsInserter;
+       crosshairs;
+       props;
+       pid_int;
+       pid_prev;
     end 
     
     properties (Constant)
@@ -16,10 +23,12 @@ classdef turret < handle
         ST_FOLLOW    = 4; % Search and track, but don't attack targets
         ST_ATTACK    = 5; % Search, track and neutralize!
         
+        IMWIDTH = 320; %TODO: Considering moving to init
         MAXROT  = 2*pi;
         WRAP_THRESH = 15;
         CALIBRATE_STARTUP_PD = 1000; %ms
         CALIBRATE_SPD = pi / 4; %Revolution takes 8 seconds.
+        PID = [1 1 1]; %Coefficients for PID control
     end
     
     methods
@@ -34,8 +43,20 @@ classdef turret < handle
             o.set_firing(0);
             o.ser_update(o.vel, o.firing); 
             
-            figure('Name', 'TurretView');
-            o.imhandle = imshow(zeros(240,320));
+            figure('Name', 'Views');
+            subplot(1,3,1);
+            o.fghandle = imshow(zeros(240,320), [0 1]);
+            subplot(1,3,2)
+            o.bghandle = imshow(zeros(240,320), [0 255]);
+            subplot(1,3,3);
+            o.camhandle = imshow(zeros(240,320,3), [0 255]);
+            
+            o.crosshairsInserter = vision.ShapeInserter('BorderColor','Custom','CustomBorderColor',uint8([0 255 0]));
+            o.crosshairs = int32([10 10 30 30]);
+            
+            %Init PID
+            o.pid_int = 0;
+            o.pid_prev = 0;
         end
         
         function ser_update(o, trigger_state, rotation_speed)
@@ -43,17 +64,18 @@ classdef turret < handle
            % - rotation_speed => sets rotation speed in rad/sec
            
            %Sanitize
-           trigger_state = uint8(trigger_state == 1); 
+           trigger_state = int8(trigger_state == 1); 
            rotation_speed = min(rotation_speed, o.MAXROT);
            rotation_speed = max(rotation_speed, -o.MAXROT);
            
            %TODO: Convert rot speed using feedback from camera
-           rotation_bits = uint8(round(rotation_speed / o.MAXROT * intmax('int8')));
+           rotation_bits = int8(round(rotation_speed / o.MAXROT * intmax('int8')));
            rotation_bits = bitset(rotation_bits, 1, 0);
            
+           
            %Now write in byte form to serial connection
-           ser_byte = uint8(bitor(rotation_bits, trigger_state));
-           o.ser.write(sprintf('%c', ser_byte));
+           ser_byte = int8(bitor(rotation_bits, trigger_state));
+           o.ser.write(ser_byte);
         end
         
         function [oldtracker] = set_tracker(o, tracker)
@@ -76,7 +98,6 @@ classdef turret < handle
         end
         
         function step(o, IM, delta_ms)
-            
             % Calculates the next move given camera input
             switch (o.state)
                 case o.ST_CALIBRATE
@@ -95,27 +116,67 @@ classdef turret < handle
                        o.set_state(o.ST_BRAKE);
                     end
                     
-                    o.ser_update(0, o.CALIBRATE_SPD);
+                    set(o.camhandle, 'CData', IM);
                     
                 case o.ST_BRAKE 
                     %Stop everything ASAP. Bypass as much as possible.
                     o.ser.write(uint8(0));
                     o.firing = 0;
                     o.vel = 0;
+                    set(o.camhandle, 'CData', IM);
                     return
                 case o.ST_FIXED
                     %Get position update estimate from tracker
                     %given current speed
                     rot_delta = o.tracker.estimate_shift(IM, o.vel * (delta_ms/1000));
-                    disp(o.tracker.h_pos);
+                    
                     %Subtract the background to detect foreground objects
                     im2 = o.tracker.get_frame();
-                    set(o.imhandle, 'CData', im2);
-                    %[fg_mask, props] = detect_objects(IM, o.tracker.get_frame());
-                    
-                    %set(o.imhandle, 'CData', fg_mask);
+                    [fg_mask, fg_props] = detect_objects(IM, im2);
+                    fprintf('%d blobs found\n', length(fg_props));
+                    set(o.fghandle, 'CData', fg_mask);
+                    o.props = fg_props;
+                    IMcol = repmat(IM,[1,1,3]);
+                    if ~isempty(fg_props)
+                        for i=1:length(fg_props)
+                            o.crosshairs = uint16(fg_props(1).BoundingBox);
+                            IMcol = step(o.crosshairsInserter, IMcol, o.crosshairs);
+                            %TODO: vision.TextInserter
+                        end
+                    end
+                    set(o.camhandle, 'CData', IMcol);
                 case o.ST_FOLLOW
-                    error('Implement follow');
+                    %Get position update estimate from tracker
+                    %given current speed
+                    rot_delta = o.tracker.estimate_shift(IM, o.vel * (delta_ms/1000));
+                    
+                    %Subtract the background to detect foreground objects
+                    im2 = o.tracker.get_frame();
+                    set(o.bghandle, 'CData', im2);
+                    
+                    [fg_mask, fg_props] = detect_objects(IM, im2);
+                    fprintf('%d blobs found\n', length(fg_props));
+                    set(o.fghandle, 'CData', fg_mask);
+                    o.props = fg_props;
+                    IMcol = repmat(IM,[1,1,3]);
+                    if ~isempty(fg_props)
+                        o.crosshairs = uint16(fg_props(1).BoundingBox);
+                        IMcol = step(o.crosshairsInserter, IMcol, o.crosshairs);
+                        
+                        %TODO: vision.TextInserter
+                        
+                        %TODO: Prioritize based on movement amount. If it
+                        %doesn't move relative to background, consider
+                        %not shooting it. 
+                        
+                        error = fg_props(1).Centroid(1) - o.IMWIDTH/2;
+                        o.pid_int = 0.75*o.pid_int + error; %Geometric weighted integral... 0.3% influence by step 20.
+                        pid_d = error - o.pid_prev;
+                        action = o.PID(1) * error + o.PID(2) * o.pid_int + o.PID(3) * pid_d;
+                        o.pid_prev = error;
+                        o.ser_update(0, action);
+                    end
+                    set(o.camhandle, 'CData', IMcol);
                 case o.ST_ATTACK
                     error('Implement attack');
                 otherwise

@@ -20,7 +20,7 @@ classdef serial_target_emulator < serial_view_emulator
             %updates emulated object velocity
             o.object_shown = shown;
             direction = [(keyval(4) - keyval(3)) (keyval(2) - keyval(1))];
-            o.object_vel = 0.85 * o.object_vel + 2*direction;
+            o.object_vel = 0.85 * o.object_vel + direction;
             o.circ_pos(1) = o.circ_pos(1) + o.object_vel(1);
             o.circ_pos(2) = o.circ_pos(2) + o.object_vel(2);
             %Allow wraparound
@@ -37,22 +37,22 @@ classdef serial_target_emulator < serial_view_emulator
             %motion blur. 
             
             px_movement = o.update_pos(delta_ms);
+            fprintf('Moving %d px', px_movement);
             IM = o.get_current_view();
             pos_rel = int16([o.circ_pos(1) o.circ_pos(2) o.circ_pos(3)]);
             
             %Special cases for wraparound
-            pos_candidates = [o.circ_pos(1) - o.hpos ...
-                              o.circ_pos(1) - (o.hpos + o.pan_wide) ...
-                              o.circ_pos(1) - (o.hpos - o.pan_wide)];
+            pos_candidates = [double(o.circ_pos(1)) - o.hpos ...
+                              double(o.circ_pos(1)) - (o.hpos + o.pan_wide) ...
+                              double(o.circ_pos(1)) - (o.hpos - o.pan_wide)];
             best_candidate = pos_candidates(abs(pos_candidates) == min(abs(pos_candidates)));
-            pos_rel(1) = best_candidate(1);
+            pos_rel(1) = int16(best_candidate(1));
             
             if (o.object_shown)
                 imspr = step(o.inserter, IM, pos_rel);
             else
                 imspr = IM;
             end
-            
             IM = o.apply_noise(imspr, px_movement);
         end
     end

@@ -33,7 +33,7 @@ classdef serial_view_emulator < serial_template
         
         function [IM] = apply_noise(~, IM, px_movement)
             %Add motion blur if we're moving
-            len = floor(abs(px_movement));
+            len = floor(abs(double(px_movement)));
             if (len > 0)
                 theta = 0;
                 if (px_movement < 0)
@@ -51,7 +51,7 @@ classdef serial_view_emulator < serial_template
             %Accelerate towards desired velocity
             o.vel = o.MOMENTUM * o.vel + (1 - o.MOMENTUM) * o.target_vel;
             dt = delta_ms / 1000.0;
-            px_movement = 2*(o.vel .* dt);
+            px_movement = round(2*(double(o.vel) .* dt));
             o.hpos = o.hpos + px_movement;
             
             %Allow wraparound
@@ -72,7 +72,8 @@ classdef serial_view_emulator < serial_template
             %motion blur. 
             
             px_movement = o.update_pos(delta_ms);
-            IM = o.apply_noise(o.get_current_view(), px_movement);
+            IM = o.get_current_view();
+            IM = o.apply_noise(IM, px_movement);
         end
     end
 end

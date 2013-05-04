@@ -32,8 +32,8 @@ classdef bg_tracker < handle
             o.pframe = initial_frame;
             o.first = initial_frame;
             o.bg_panorama = uint8(128 .* ones(o.imsz(1), o.imsz(2)*o.REPEAT));
-            figure();
-            o.handlesDisp = imshow(o.bg_panorama, 'InitialMagnification', 'fit');
+            %figure();
+            %o.handlesDisp = imshow(o.bg_panorama, 'InitialMagnification', 'fit');
 
             bgsz = size(o.bg_panorama);
             fprintf('panorama init (%dx%d)\n', bgsz(2), bgsz(1));
@@ -86,14 +86,34 @@ classdef bg_tracker < handle
            end
        end
        
-       function [rot_delta] = estimate_shift(o, frame, rot_delta)
+       function [dist, rot_delta] = estimate_shift(o, frame, rot_delta)
            %Calculate position change and update h_pos
-           xc_dist = o.correlate(o.pframe, frame, o.HORIZ_SEARCH_DIST);
-           est_dist = rot_delta * o.rot_to_px;
+           xc_dist = o.correlate(o.pframe, frame, 32*o.HORIZ_SEARCH_DIST);
+           %est_dist = rot_delta * o.rot_to_px;
+           
+           %RANSAC and SURF features?
+           %TODO: Cache to speedup
+           %{
+           points1 = detectHarrisFeatures(o.pframe);
+           points2 = detectHarrisFeatures(frame);
+           [features1, valid_points1] = extractFeatures(o.pframe, points1);
+           [features2, valid_points2] = extractFeatures(frame, points2);
+           indexPairs = matchFeatures(features1, features2);
+           %}
+           %Matching patches... use ZNCC... max(normxcorr2(I1,I2))
+           %1 = total match, -1 = complete opposite
            
            %Result distance factors in estimate and cross-correlation
-           dist = o.EST_WEIGHT*est_dist + (1-o.EST_WEIGHT)*xc_dist;
+           dist = xc_dist;
+           %dist = o.EST_WEIGHT*est_dist + (1-o.EST_WEIGHT)*xc_dist;
            o.h_pos = o.h_pos + dist;
+           
+           %Allow wraparound
+            if (o.h_pos < 1)
+                o.h_pos = o.h_pos + o.endpos;
+            elseif (o.h_pos > o.endpos+1)
+                o.h_pos = o.h_pos - o.endpos;
+            end
            
            rot_delta = dist / o.rot_to_px; %Convert back to rotation units
            o.pframe = frame;
@@ -110,7 +130,7 @@ classdef bg_tracker < handle
         o.bg_panorama(:, ceil(o.h_pos):ceil(o.h_pos)+o.imsz(2)-1) = wfusmat(o.bg_panorama(:, ceil(o.h_pos):ceil(o.h_pos)+o.imsz(2)-1), frame, 'mean');
         
         %show = step(inserter,bg_panorama,strips);
-        set(o.handlesDisp,'CData',o.bg_panorama); 
+        %set(o.handlesDisp,'CData',o.bg_panorama); 
 
         o.pframe = frame;
         
