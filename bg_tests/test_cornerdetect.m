@@ -1,8 +1,8 @@
 pframe = imread('tough1.jpg');
 frame = imread('tough2.jpg');
 
-points1 = detectSURFFeatures(pframe);
-points2 = detectSURFFeatures(frame);
+points1 = detectFASTFeatures(pframe);
+points2 = detectFASTFeatures(frame);
 [features1, valid_points1] = extractFeatures(pframe, points1);
 [features2, valid_points2] = extractFeatures(frame, points2);
 indexPairs = matchFeatures(features1, features2);

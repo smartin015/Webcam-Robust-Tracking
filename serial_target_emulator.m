@@ -37,7 +37,7 @@ classdef serial_target_emulator < serial_view_emulator
             %motion blur. 
             
             px_movement = o.update_pos(delta_ms);
-            fprintf('Moving %d px', px_movement);
+            %fprintf('Moving %d px', px_movement);
             IM = o.get_current_view();
             pos_rel = int16([o.circ_pos(1) o.circ_pos(2) o.circ_pos(3)]);
             

@@ -23,12 +23,12 @@ function test_turret_tracking()
     %Turret object. Initialize with tracker and start fixed detect mode
     t = turret(temu);
     t.set_tracker(tracker);
-    t.set_state(turret.ST_FIXED);
+    t.set_state(turret.ST_FOLLOW);
     
     Screen.fh = figure('KeyPressFcn', @KeyPress, 'KeyReleaseFcn', @KeyRelease);
     
     % set up and start timer
-    NumberFrameDisplayPerSecond = 22;
+    NumberFrameDisplayPerSecond = 3;
     dt = 1000/NumberFrameDisplayPerSecond;
     TimerData=timer('TimerFcn', {@FrameRateDisplay},'Period',1/NumberFrameDisplayPerSecond,'ExecutionMode','fixedRate','BusyMode','drop');
     start(TimerData);

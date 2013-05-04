@@ -8,7 +8,7 @@ classdef serial_template < handle
             if (not(length(c) == 1))
                 error(sprintf('Invalid byte %s given', c));
             end
-            disp(c);
+            %disp(c);
             firing = bitand(int8(c), int8(1)); %Get bottom bit
             
             %Probably low enough jitter to not worry about an extra bit

@@ -13,6 +13,7 @@ classdef turret < handle
        props;
        pid_int;
        pid_prev;
+       PID; %Coeffs for PID control
     end 
     
     properties (Constant)
@@ -28,7 +29,6 @@ classdef turret < handle
         WRAP_THRESH = 15;
         CALIBRATE_STARTUP_PD = 1000; %ms
         CALIBRATE_SPD = pi / 4; %Revolution takes 8 seconds.
-        PID = [1 1 1]; %Coefficients for PID control
     end
     
     methods
@@ -42,6 +42,8 @@ classdef turret < handle
             o.set_speed(0);
             o.set_firing(0);
             o.ser_update(o.vel, o.firing); 
+            
+            o.PID = [1, 0.25, 1]; %Coefficients for PID control
             
             figure('Name', 'Views');
             subplot(1,3,1);
@@ -155,12 +157,28 @@ classdef turret < handle
                     set(o.bghandle, 'CData', im2);
                     
                     [fg_mask, fg_props] = detect_objects(IM, im2);
-                    fprintf('%d blobs found\n', length(fg_props));
+                    %TODO: Text Insert # blobs found
+                    %fprintf('%d blobs found\n', length(fg_props));
                     set(o.fghandle, 'CData', fg_mask);
                     o.props = fg_props;
                     IMcol = repmat(IM,[1,1,3]);
                     if ~isempty(fg_props)
-                        o.crosshairs = uint16(fg_props(1).BoundingBox);
+                        target = fg_props(1);
+                        for i=1:length(fg_props)
+                           %Check for object
+                           %TODO: Change to person detection
+                           %Right now, checks for a dark sphere.
+                           %TODO: Do something other than expensive mean
+                           %computation
+                           target_meanpx = mean(mean(imcrop(IM, fg_props(i).BoundingBox)));
+                           if (target_meanpx <= 50)
+                              target = fg_props(i);
+                              break;
+                           end
+                               
+                        end
+                        
+                        o.crosshairs = uint16(target.BoundingBox);
                         IMcol = step(o.crosshairsInserter, IMcol, o.crosshairs);
                         
                         %TODO: vision.TextInserter
@@ -169,9 +187,11 @@ classdef turret < handle
                         %doesn't move relative to background, consider
                         %not shooting it. 
                         
-                        error = fg_props(1).Centroid(1) - o.IMWIDTH/2;
+                        error = target.Centroid(1) - o.IMWIDTH/2;
                         o.pid_int = 0.75*o.pid_int + error; %Geometric weighted integral... 0.3% influence by step 20.
                         pid_d = error - o.pid_prev;
+                        disp(o.PID(2));
+                        fprintf('%02f %02f %02f\n', o.PID(1) * error, o.PID(2) * o.pid_int, o.PID(3) * pid_d);
                         action = o.PID(1) * error + o.PID(2) * o.pid_int + o.PID(3) * pid_d;
                         o.pid_prev = error;
                         o.ser_update(0, action);

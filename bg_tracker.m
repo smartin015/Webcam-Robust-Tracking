@@ -4,6 +4,8 @@ classdef bg_tracker < handle
    properties 
        bg_panorama;
        pframe;
+       pframe_feats;
+       pframe_pts;
        handlesDisp;
        hlines;
        h_pos;
@@ -11,6 +13,7 @@ classdef bg_tracker < handle
        imsz;
        first;
        rot_to_px;
+       gte; %Gometric transform estimater
    end 
    properties(Constant = true)
        REPEAT = 5; %bg_panorama width is REPEAT * <image width>
@@ -27,6 +30,10 @@ classdef bg_tracker < handle
             o.imsz = size(initial_frame);
             o.rot_to_px = 10; %px/radian
             
+            o.gte = vision.GeometricTransformEstimator;
+            o.gte.Transform = 'Nonreflective similarity';
+            pts = detectSURFFeatures(initial_frame);
+            [o.pframe_feats, o.pframe_pts] = extractFeatures(initial_frame, pts);
             
             % set up background panorama
             o.pframe = initial_frame;
@@ -87,36 +94,35 @@ classdef bg_tracker < handle
        end
        
        function [dist, rot_delta] = estimate_shift(o, frame, rot_delta)
-           %Calculate position change and update h_pos
-           xc_dist = o.correlate(o.pframe, frame, 32*o.HORIZ_SEARCH_DIST);
-           %est_dist = rot_delta * o.rot_to_px;
-           
-           %RANSAC and SURF features?
-           %TODO: Cache to speedup
-           %{
-           points1 = detectHarrisFeatures(o.pframe);
-           points2 = detectHarrisFeatures(frame);
-           [features1, valid_points1] = extractFeatures(o.pframe, points1);
-           [features2, valid_points2] = extractFeatures(frame, points2);
-           indexPairs = matchFeatures(features1, features2);
-           %}
-           %Matching patches... use ZNCC... max(normxcorr2(I1,I2))
-           %1 = total match, -1 = complete opposite
-           
-           %Result distance factors in estimate and cross-correlation
-           dist = xc_dist;
-           %dist = o.EST_WEIGHT*est_dist + (1-o.EST_WEIGHT)*xc_dist;
-           o.h_pos = o.h_pos + dist;
-           
-           %Allow wraparound
+            points2 = detectSURFFeatures(frame);
+            [features2, valid_points2] = extractFeatures(frame, points2);
+            indexPairs = matchFeatures(o.pframe_feats, features2);
+
+            matched_points1 = o.pframe_pts(indexPairs(:, 1), :);
+            matched_points2 = valid_points2(indexPairs(:, 2), :);
+
+            [tform inlierIdx] = step(o.gte, matched_points2.Location, matched_points1.Location);
+            %figure; showMatchedFeatures(o.pframe,frame,matched_points1(inlierIdx),matched_points2(inlierIdx));
+            %title('Matching inliers'); legend('inliersIn', 'inliersOut');
+
+            delta = -mean(matched_points2(inlierIdx).Location - matched_points1(inlierIdx).Location);
+            
+            %TODO: If match fail, try applying current velocity
+            
+            dist = delta(1);%TODO: Try magnitude?
+            o.h_pos = o.h_pos + dist; 
+
+            %Allow wraparound
             if (o.h_pos < 1)
                 o.h_pos = o.h_pos + o.endpos;
             elseif (o.h_pos > o.endpos+1)
                 o.h_pos = o.h_pos - o.endpos;
             end
-           
-           rot_delta = dist / o.rot_to_px; %Convert back to rotation units
-           o.pframe = frame;
+
+            rot_delta = dist / o.rot_to_px; %Convert back to rotation units
+            o.pframe = frame;
+            o.pframe_pts = valid_points2;
+            o.pframe_feats = features2;
        end
        
        function [overlapped] = calibrate(o, frame, rot_delta)

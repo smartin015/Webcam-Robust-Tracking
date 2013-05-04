@@ -28,14 +28,7 @@ for i=1:100
     temu.update_target(keyval, 1);
     IM = temu.next_frame(dt); %ms/frame
     t.step(IM, dt);
-    pause(0.2);
-    
-    if (i == 11)
-        imwrite(IM, 'tough1.jpg', 'jpg');
-    end
-    if (i == 12)
-        imwrite(IM, 'tough2.jpg', 'jpg');
-    end
+    pause(0.001);
 end
 
 rmpath ../
