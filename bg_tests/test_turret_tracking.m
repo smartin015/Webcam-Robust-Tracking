@@ -30,8 +30,8 @@ function test_turret_tracking()
     % set up and start timer
     NumberFrameDisplayPerSecond = 3;
     dt = 1000/NumberFrameDisplayPerSecond;
-    TimerData=timer('TimerFcn', {@FrameRateDisplay},'Period',1/NumberFrameDisplayPerSecond,'ExecutionMode','fixedRate','BusyMode','drop');
-    start(TimerData);
+    %TimerData=timer('TimerFcn', {@FrameRateDisplay},'Period',1/NumberFrameDisplayPerSecond,'ExecutionMode','fixedRate','BusyMode','drop');
+    %start(TimerData);
 
     function KeyPress(varargin) 
         one_a = varargin{2};
@@ -53,17 +53,19 @@ function test_turret_tracking()
         end
     end 
     
-    function FrameRateDisplay(obj, event)
+    %function FrameRateDisplay(obj, event)
+    while (1)
         temu.update_target(keyval, object_shown);
         IM = temu.next_frame(1000/NumberFrameDisplayPerSecond);
         t.step(IM, dt);
+        pause(0.1);
     end
 
     % We go on until the figure is closed
     uiwait(Screen.fh);
 
     % Clean up everything
-    stop(TimerData);
-    delete(TimerData);
+    %stop(TimerData);
+    %delete(TimerData);
     rmpath ../
 end

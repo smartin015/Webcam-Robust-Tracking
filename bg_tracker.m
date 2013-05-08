@@ -39,8 +39,8 @@ classdef bg_tracker < handle
             o.pframe = initial_frame;
             o.first = initial_frame;
             o.bg_panorama = uint8(128 .* ones(o.imsz(1), o.imsz(2)*o.REPEAT));
-            %figure();
-            %o.handlesDisp = imshow(o.bg_panorama, 'InitialMagnification', 'fit');
+            figure();
+            o.handlesDisp = imshow(o.bg_panorama, 'InitialMagnification', 'fit');
 
             bgsz = size(o.bg_panorama);
             fprintf('panorama init (%dx%d)\n', bgsz(2), bgsz(1));
@@ -136,7 +136,7 @@ classdef bg_tracker < handle
         o.bg_panorama(:, ceil(o.h_pos):ceil(o.h_pos)+o.imsz(2)-1) = wfusmat(o.bg_panorama(:, ceil(o.h_pos):ceil(o.h_pos)+o.imsz(2)-1), frame, 'mean');
         
         %show = step(inserter,bg_panorama,strips);
-        %set(o.handlesDisp,'CData',o.bg_panorama); 
+        set(o.handlesDisp,'CData',o.bg_panorama); 
 
         o.pframe = frame;
         

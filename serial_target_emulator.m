@@ -20,7 +20,7 @@ classdef serial_target_emulator < serial_view_emulator
             %updates emulated object velocity
             o.object_shown = shown;
             direction = [(keyval(4) - keyval(3)) (keyval(2) - keyval(1))];
-            o.object_vel = 0.85 * o.object_vel + direction;
+            o.object_vel = 0.85 * o.object_vel + 2*direction;
             o.circ_pos(1) = o.circ_pos(1) + o.object_vel(1);
             o.circ_pos(2) = o.circ_pos(2) + o.object_vel(2);
             %Allow wraparound

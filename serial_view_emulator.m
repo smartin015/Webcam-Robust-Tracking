@@ -51,7 +51,7 @@ classdef serial_view_emulator < serial_template
             %Accelerate towards desired velocity
             o.vel = o.MOMENTUM * o.vel + (1 - o.MOMENTUM) * o.target_vel;
             dt = delta_ms / 1000.0;
-            px_movement = round(2*(double(o.vel) .* dt));
+            px_movement = round((double(o.vel) .* dt));
             o.hpos = o.hpos + px_movement;
             
             %Allow wraparound

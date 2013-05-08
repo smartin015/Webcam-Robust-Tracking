@@ -27,8 +27,7 @@ classdef turret < handle
         IMWIDTH = 320; %TODO: Considering moving to init
         MAXROT  = 2*pi;
         WRAP_THRESH = 15;
-        CALIBRATE_STARTUP_PD = 1000; %ms
-        CALIBRATE_SPD = pi / 4; %Revolution takes 8 seconds.
+        CALIBRATE_SPD = 0.001; %Revolution takes 8 seconds.
     end
     
     methods
@@ -46,12 +45,15 @@ classdef turret < handle
             o.PID = [1, 0.25, 1]; %Coefficients for PID control
             
             figure('Name', 'Views');
-            subplot(1,3,1);
+            subplot(1,3,2);
             o.fghandle = imshow(zeros(240,320), [0 1]);
-            subplot(1,3,2)
+            title('Detected Blobs');
+            subplot(1,3,1)
             o.bghandle = imshow(zeros(240,320), [0 255]);
+            title('Background Model');
             subplot(1,3,3);
             o.camhandle = imshow(zeros(240,320,3), [0 255]);
+            title('Tracked Ball');
             
             o.crosshairsInserter = vision.ShapeInserter('BorderColor','Custom','CustomBorderColor',uint8([0 255 0]));
             o.crosshairs = int32([10 10 30 30]);
@@ -117,7 +119,8 @@ classdef turret < handle
                        o.tracker.crop();
                        o.set_state(o.ST_BRAKE);
                     end
-                    
+                    im2 = o.tracker.get_frame();
+                    set(o.bghandle, 'CData', im2);
                     set(o.camhandle, 'CData', IM);
                     
                 case o.ST_BRAKE 

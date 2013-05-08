@@ -70,7 +70,7 @@ function FrameRateDisplay(obj, event,vid)
     %   return 
     %end
     
-    bg_track(IM);  
+    %bg_track(IM);  
 end
 
 
