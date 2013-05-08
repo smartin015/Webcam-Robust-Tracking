@@ -1,4 +1,10 @@
-
+% Flat-out untimed loop of turret tracking. 
+% This tests the speed and robustness of the 
+% turrent in detecting a single foreground 
+% object with a noisy camera and premade
+% background panorama
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
 
 function test_turret_tracking()
     global keymap keyval;

@@ -1,3 +1,9 @@
+% A quick test of the serial target emulator. 
+% Use arrow keys to control position of the 
+% target, and spacebar to make it appear/disappear. 
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013    
+
 function test_keyboard_input()
     global keymap keyval;
     inserter = vision.ShapeInserter('Shape','Circles','Fill', true, 'Opacity', 1.0);

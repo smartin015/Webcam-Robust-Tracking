@@ -1,4 +1,9 @@
-function test_webcam()
+% This is an attempt at testing calibration using realtime webcam data.
+% This is yet to be proven to work.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
+function test_webcam_calib()
     IMSZ = [240 320]; %[H W]
 
     % Set-up webcam video input

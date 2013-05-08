@@ -1,3 +1,9 @@
+% This serial class emulates a scene in which 
+% a foreground object (the black ball) is moving
+% against a background. 
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 classdef serial_target_emulator < serial_view_emulator
     properties
        object_vel;

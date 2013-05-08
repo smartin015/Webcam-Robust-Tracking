@@ -1,3 +1,9 @@
+% Tests async keyboard input to test scripts. This 
+% lets us manually rotate the turret or move a target
+% without script hard-coding.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 function test_keyboard_input()
     global keymap keyval;
     inserter = vision.ShapeInserter('Shape','Circles','Fill', true, 'Opacity', 1.0);

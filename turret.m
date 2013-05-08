@@ -1,3 +1,10 @@
+% Main class for the turret project. Incorporates 
+% background model creation, position estimation, 
+% blob detection and tracking and serial communication
+% to the turret.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 classdef turret < handle
     properties 
        ser;

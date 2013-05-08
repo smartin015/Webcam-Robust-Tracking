@@ -1,3 +1,12 @@
+% Transmits serial instructions to an arduino
+% to control servo rotation speed and trigger action. 
+% Note that this currently translates a magnitude-based
+% directional command to simple left/right, as the 
+% servo resolution was determined to be too low.
+% TODO: Fix this in future version
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 classdef serial_com < serial_template
     properties
         ser

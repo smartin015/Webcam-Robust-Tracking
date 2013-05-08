@@ -1,3 +1,9 @@
+% A simpler test of test_turret_tracking,
+% allows for easier code profiling to detect bottlenecks.
+% Just go in one direction and test accuracy of tracking.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 addpath ../
 close all
 clear all

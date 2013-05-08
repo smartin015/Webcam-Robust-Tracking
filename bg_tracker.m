@@ -1,3 +1,9 @@
+% Background panorama constructor and feature matching class.
+% Used extensively in the turret to discriminate between
+% background and foreground features.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 classdef bg_tracker < handle
     % This class handles background scene construction. Once the 
     % background panorama (bg_panorama) is constructed, 

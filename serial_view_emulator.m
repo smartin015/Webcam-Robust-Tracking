@@ -1,3 +1,9 @@
+% This serial class emulates a background scene
+% by returning frames cut from a panoramic
+% image.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 classdef serial_view_emulator < serial_template
     properties
         firing;

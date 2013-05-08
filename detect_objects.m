@@ -1,5 +1,7 @@
-%Detect using subtraction with blur, threshold, area opening and hole
-%filling.
+% Detect foreground objects using subtraction with blur, 
+% threshold, area opening and hole filling.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
 function [fg_mask, fg_props] = detect_objects(fg_img, bg_img)
     %Empirical value. Differences above this could be foreground.
     DIFF_THRESH = 32;

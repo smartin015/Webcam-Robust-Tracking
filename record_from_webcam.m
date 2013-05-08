@@ -1,4 +1,7 @@
-% Set-up webcam video input
+% Records a bunch of frames from the webcam for use in 
+% offline testing. 
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
 
 function record()
     try

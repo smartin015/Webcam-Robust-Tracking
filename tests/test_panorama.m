@@ -1,7 +1,9 @@
-%Most legit test sequence. 
-%Panoramic image with injected noise, wraps around
-%Then commences blind orientation tests
-%(With and without foreground objects)
+% Panoramic image test with injected noise and motion blur,
+% wraps around then commences blind orientation tests
+% (With and without foreground objects)
+% TODO: test SURF matching
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
 
 clear functions
 clear tracker

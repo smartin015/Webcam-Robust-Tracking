@@ -1,3 +1,9 @@
+%Simple test of the background tracker in handling 
+%rotation of the camera. We move the camera at high
+%speed and check to ensure the estimated background 
+%position keeps up with it.
+%Scott Martin <semartin@andrew.cmu.edu>
+
 addpath ../
 close all
 clear all

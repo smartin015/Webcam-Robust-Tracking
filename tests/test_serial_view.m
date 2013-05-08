@@ -1,6 +1,8 @@
-%Tests capability of serial_debug class in receiving
+%Tests capability of serial_view_emulator class in receiving
 %serial commands and affecting a test view using the
 %settings provided by those commands.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
 
 clear functions
 clear serdbg

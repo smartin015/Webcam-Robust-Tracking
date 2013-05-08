@@ -1,3 +1,10 @@
+% Template for all real and simulated serial classes
+% used by the NERF turret. This wrapper allows
+% easy conversion of [velocity + firing] commands
+% into a single 8-bit instruction before write.
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
+
 classdef serial_template < handle   
     methods
         function o = serial_template()

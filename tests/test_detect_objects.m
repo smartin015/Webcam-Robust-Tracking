@@ -1,3 +1,8 @@
+%This is a test of the detect_objects script 
+%on a slightly-off pair of images. 
+%TODO: Use modified version of original image instead of bg panorama
+%Scott Martin <semartin@andrew.cmu.edu>
+%5/2013
 
 %Load saved tracker session to get panorama
 load('tracker.mat')

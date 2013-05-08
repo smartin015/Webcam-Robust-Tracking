@@ -1,4 +1,7 @@
-
+% Tests the calibration state of the turret class.
+% Should perform similarly to test_panorama.m
+% Scott Martin <semartin@andrew.cmu.edu>
+% 5/2013
 clear functions
 clear turret
 close all

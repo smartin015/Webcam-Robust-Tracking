@@ -1,3 +1,9 @@
+// Simple control script for the nerf turret. 
+// This reads in serial and converts to an actual speed
+// and rate of fire. 
+// Scott Martin <semartin@andrew.cmu.edu>
+// 5/2013
+
 #include <Servo.h> 
 
 Servo myservo;
