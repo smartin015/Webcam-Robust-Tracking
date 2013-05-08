@@ -1,5 +1,6 @@
 % This is an attempt at testing calibration using realtime webcam data.
-% This is yet to be proven to work.
+% This is still a work in progress
+% TODO: FINISH
 % Scott Martin <semartin@andrew.cmu.edu>
 % 5/2013
 

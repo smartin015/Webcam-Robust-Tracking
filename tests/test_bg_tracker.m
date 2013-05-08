@@ -2,6 +2,7 @@
 %rotation of the camera. We move the camera at high
 %speed and check to ensure the estimated background 
 %position keeps up with it.
+% TODO: Switch to feature-based tracking over xcorr
 %Scott Martin <semartin@andrew.cmu.edu>
 
 addpath ../

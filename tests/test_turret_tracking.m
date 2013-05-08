@@ -2,7 +2,10 @@
 % This tests the speed and robustness of the 
 % turrent in detecting a single foreground 
 % object with a noisy camera and premade
-% background panorama
+% background panorama.
+% Use arrow keys to move and spacebar to show/hide the ball.
+% Make sure you have the empty figure focused, as this is what 
+% captures keyboard input.
 % Scott Martin <semartin@andrew.cmu.edu>
 % 5/2013
 

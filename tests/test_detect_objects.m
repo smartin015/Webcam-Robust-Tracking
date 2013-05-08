@@ -5,6 +5,7 @@
 %5/2013
 
 %Load saved tracker session to get panorama
+addpath ../
 load('tracker.mat')
 
 hpos = 330;
@@ -38,5 +39,6 @@ for i=1:length(props)
 end
 hold off;
 
+rmpath ../
 
 

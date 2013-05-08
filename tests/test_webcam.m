@@ -6,7 +6,7 @@ function realvideo()
 
     % Set-up webcam video input
     try
-       vid = videoinput('winvideo', 2, sprintf('YUY2_%dx%d', IMSZ(2), IMSZ(1)));
+       vid = videoinput('winvideo', 1, sprintf('YUY2_%dx%d', IMSZ(2), IMSZ(1)));
     catch
        errordlg('No webcam or invalid image format');
        return
@@ -20,9 +20,10 @@ function setup(vid)
     % Define frame rate
     NumberFrameDisplayPerSecond=20;
 
+    
     % Open figure
     hFigure=figure(1);
-
+    
     % Set parameters for video
     % Acquire only one frame each time
     set(vid,'FramesPerTrigger',1);
@@ -51,26 +52,16 @@ function setup(vid)
 end
 
 function FrameRateDisplay(obj, event,vid)
-    %persistent I_t1; %Image time t+1
     persistent handlesRaw;
-    %persistent shapeInserter;
-
+    
     trigger(vid);
     IM = rgb2gray(getdata(vid,1,'uint8'));
+    if isempty(handlesRaw)
+        handlesRaw = imshow(IM);
+    else
+        set(handlesRaw, 'CData', IM);
+    end
     
-    %I_t1 = im2double(IM) ./ 255.0;
-    %if isempty(handlesRaw)
-       % if first execution, we create the figure objects
-       %subplot(2,1,1);
-       %bg_track(IM);
-       %handlesRaw = imshow(pa);
-       
-       %shapeInserter = vision.ShapeInserter('Shape','Lines','BorderColor','Custom', 'CustomBorderColor', 255);
-       
-    %   return 
-    %end
-    
-    %bg_track(IM);  
 end
 
 

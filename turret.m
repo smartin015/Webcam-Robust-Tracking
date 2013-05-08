@@ -117,7 +117,7 @@ classdef turret < handle
                     end
                     
                     o.firing = 0;
-                    o.vel = o.CALIBRATE_SPD;
+                    o.vel = 2; %TODO: No magic numbers
                     o.ser_update(o.firing, o.vel);
                     
                     %If we wrapped around, brake and wait for instructions
