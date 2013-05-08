@@ -21,6 +21,9 @@ circ_pos = uint16([120 120 20; ...
                    230 230 15; ...
                    70  150 30]);
 fg_img = step(inserter, fg_img, circ_pos);
+figure();
+subplot(1,2,1);
+imshow(fg_img);
     
 %Add noise (different versions, as if different frames)
 bg_img = imnoise(bg_img, 'gaussian');
@@ -28,6 +31,7 @@ fg_img = imnoise(fg_img, 'gaussian');
 
 %Subtract background
 [fg_mask, props] = detect_objects(fg_img, bg_img);
+subplot(1,2,2);
 imshow(fg_mask);
 
 %centroids = cat(1, props.Centroid)
